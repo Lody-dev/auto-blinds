@@ -21,30 +21,30 @@ def curl_get(path):
         result = 0
     return result
 
-def schedule_blind(hour, minute, position, job_id):
-    scheduler.add_job(
-        func=move_to,
-        trigger='cron',
-        hour=hour,
-        minute=minute,
-        args=[position],
-        id=job_id,
-        replace_existing=True  # replace if job with same id exists
-    )
-
-# Load all jobs from DB on startup
-def load_schedules():
-    conn = sqlite3.connect("roller_blinds.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, hour, minute, position FROM schedules")
-    rows = cursor.fetchall()
-    conn.close()
-    for row in rows:
-        schedule_blind(row[1], row[2], row[3], str(row[0]))
-
-def move_to(position)
-    cmd = ["curl", f"http://{ESP32_IP}/goto?pos={position}"]
-    result = subprocess.run(cmd, capture_output=False, text=True, check=True)
+#def schedule_blind(hour, minute, position, job_id):
+#    scheduler.add_job(
+#        func=move_to,
+#        trigger='cron',
+#        hour=hour,
+#        minute=minute,
+#        args=[position],
+#        id=job_id,
+#        replace_existing=True  # replace if job with same id exists
+#    )
+#
+## Load all jobs from DB on startup
+#def load_schedules():
+#    conn = sqlite3.connect("roller_blinds.db")
+#    cursor = conn.cursor()
+#    cursor.execute("SELECT id, hour, minute, position FROM schedules")
+#    rows = cursor.fetchall()
+#    conn.close()
+#    for row in rows:
+#        schedule_blind(row[1], row[2], row[3], str(row[0]))
+#
+#def move_to(position)
+#    cmd = ["curl", f"http://{ESP32_IP}/goto?pos={position}"]
+#    result = subprocess.run(cmd, capture_output=False, text=True, check=True)
 
 slider_position = curl_get("get_current_pos") 
 max_pos = curl_get("get_max_pos")
