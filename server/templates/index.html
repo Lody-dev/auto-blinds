@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roller Blinds Control</title>
+</head>
+<body>
+    <h2>Roller Blind Control</h2>
+
+    <form method="post">
+        <input type="range" name="value" min="1" max="100" value="{{ slider_position }}">
+        <span>{{ slider_position }}%</span>
+        <input type="submit" value="Move">
+    </form>
+</body>
+</html>
