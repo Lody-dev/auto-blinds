@@ -7,10 +7,59 @@
 <body>
     <h2>Roller Blind Control</h2>
 
-    <form method="post">
-        <input type="range" name="value" min="1" max="100" value="{{ slider_position }}">
-        <span>{{ slider_position }}%</span>
-        <input type="submit" value="Move">
-    </form>
+<form method="post" >
+    <input 
+        type="range" 
+        name="value" 
+        min="0" 
+        max="100" 
+        value="{{ slider_position }}" 
+        id="slider"
+        oninput="updateValue(this.value)"
+    >
+    <span id="sliderValue">{{ slider_position }}%</span>
+    <input type="submit" name="action" value="Move">
+</form>
+
+<h2>Schedule Roller Blind Movement</h2>
+ <form method="post">
+  <label for="hour">Hour (0–23):</label><br>
+  <input type="number" id="hour" name="hour" min="0" max="23" required><br><br>
+
+  <label for="minute">Minute (0–59):</label><br>
+  <input type="number" id="minute" name="minute" min="0" max="59" required><br><br>
+
+  <label for="position">Position (%):</label><br>
+  <input type="number" id="position" name="position" min="0" max="100" required><br><br>
+
+  <input type="submit" name="action" value="Schedule">
+</form>
+<h2>Saved Schedules</h2>
+<table border="1">
+    <tr>
+        <th>Hour</th>
+        <th>Minute</th>
+        <th>Position (%)</th>
+        <th>Action</th>
+    </tr>
+    {% for schedule in schedules %}
+    <tr>
+        <td>{{ schedule[1] }}</td>
+        <td>{{ schedule[2] }}</td>
+        <td>{{ schedule[3] }}</td>
+        <td>
+            <form method="post" style="display:inline">
+                <input type="hidden" name="id" value="{{ schedule[0] }}">
+                <input type="submit" name="action" value="Delete">
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<script>
+function updateValue(val) {
+    document.getElementById('sliderValue').textContent = val + "%";
+}
+</script>
 </body>
 </html>
