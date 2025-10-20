@@ -20,11 +20,19 @@ def curl_get(path):
     except:
         return 0
 
+#def move_to(position):
+#    """Actual job executed by the scheduler"""
+#    print(f"[{datetime.now()}] Moving blinds to {position}")
+#    subprocess.run(["curl", f"http://{ESP32_IP}/goto?pos={position}"],
+#                   capture_output=False, text=True, check=False)
 def move_to(position):
     """Actual job executed by the scheduler"""
-    print(f"[{datetime.now()}] Moving blinds to {position}")
-    subprocess.run(["curl", f"http://{ESP32_IP}/goto?pos={position}"],
+    max_pos = curl_get("get_max_pos") or 1
+    raw_position = int(position * max_pos / 100)  # scale only here
+    print(f"[{datetime.now()}] Moving blinds to {position}% -> raw {raw_position}")
+    subprocess.run(["curl", f"http://{ESP32_IP}/goto?pos={raw_position}"],
                    capture_output=False, text=True, check=False)
+
 
 
 def add_schedule_to_scheduler(job_id, hour, minute, position):
@@ -66,7 +74,7 @@ def index():
 
         if action == "Move":
             slider_position = int(request.form.get("value", slider_position))
-            move_to(int(slider_position * max_pos / 100))
+            move_to(int(slider_position))
 
         elif action == "Schedule":
             hour = int(request.form.get("hour"))
