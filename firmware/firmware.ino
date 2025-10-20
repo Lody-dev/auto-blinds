@@ -17,9 +17,9 @@
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 
 // --- Globals ---
-const char* ssid     = "PointerToWifi";
-const char* password = "PzxdpDbc";
-WebServer server(80);
+const char* ssid     = "Your wifi ssid (name)";
+const char* password = "Your wifi password";
+WebServer server(80); //WebServer will start on port 80;
 
 unsigned long lastPrint = 0;
 unsigned long limit = 5000;

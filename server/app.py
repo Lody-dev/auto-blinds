@@ -7,7 +7,7 @@ import sqlite3
 app = Flask(__name__)
 scheduler = APScheduler()
 
-ESP32_IP = "192.168.18.131"
+ESP32_IP = "Your esp32 local IP"
 
 def curl_get(path):
     result = subprocess.run(
