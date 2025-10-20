@@ -4,6 +4,7 @@
 
 Control and automate your roller blinds using an ESP32 microcontroller and a Flask-based web interface. Supports both manual control and scheduled automation from any device on your network.
 
+![desktop_ui](images/ui_desktop.png)
 ---
 
 ## Features
@@ -14,8 +15,6 @@ Control and automate your roller blinds using an ESP32 microcontroller and a Fla
 - Runs on ESP32 with minimal hardware requirements
 
 
-![desktop_ui](images/ui_desktop.png)
-![mobile_ui](images/ui_mobile.jpg)
 ---
 
 ## Hardware
@@ -26,7 +25,7 @@ Control and automate your roller blinds using an ESP32 microcontroller and a Fla
 - Power supply: 12V, 1.5A (18W)
 - Connecting wires
 
-![ESP32 setup](images/diagram.jpg)
+![ESP32 setup](images/diagram.png)
 
 ---
 ## Software
