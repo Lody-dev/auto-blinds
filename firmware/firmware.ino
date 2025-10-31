@@ -17,9 +17,9 @@
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 
 // --- Globals ---
-const char* ssid     = "Your wifi ssid (name)";
+const char* ssid     = "Your wifi ssid";
 const char* password = "Your wifi password";
-WebServer server(80); //WebServer will start on port 80;
+WebServer server(80);
 
 unsigned long lastPrint = 0;
 unsigned long limit = 5000;
@@ -36,8 +36,15 @@ static unsigned long moveUpStart   = 0;
 static unsigned long moveDownStart = 0;
 static unsigned long comboStart    = 0;
 
-bool upPrev = false;
-bool downPrev = false;
+// --- Config ---
+const long stepIncrement = 1;  // how much to extend target per press
+const int  holdDelay     = 200; // ms before motion starts
+
+// --- Function declarations ---
+void handleGoto();
+void handleCurrentPos();
+void handleMaxPos();
+void handleSetUpStatus();
 
 void setup() 
 {
@@ -51,9 +58,9 @@ void setup()
   pinMode(RELAY, OUTPUT);
 
   Serial.begin(115200);
-                        
-  stepper.setMaxSpeed(1000);  
-  stepper.setAcceleration(500);
+                       
+  stepper.setMaxSpeed(300);
+  stepper.setAcceleration(300);
   digitalWrite(RELAY, HIGH);
   digitalWrite(ENABLE_PIN, LOW);
 
@@ -63,7 +70,7 @@ void setup()
   button_down.attach(B_DOWN);
   button_down.interval(10);
 
-  //WIFI STuff
+  // WiFi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) 
@@ -95,41 +102,27 @@ void handleGoto()
   Serial.println("got request");
   
   webControl = true;
-  // --- Restore acceleration mode ---
-  stepper.stop();                // cancel any constant-speed motion
-  stepper.setAcceleration(500);  // restore accel (it’s lost after setSpeed)
-  stepper.setCurrentPosition(stepper.currentPosition());
-  stepper.moveTo(target);        // schedule target
+  stepper.stop();
+  stepper.setAcceleration(300);
+  stepper.moveTo(target);
   server.send(200, "text/plain", "Moving to position " + String(target));
 }
 
-void handleCurrentPos()
-{
-  server.send(200, "text/plain", String(stepper.currentPosition()));
-}
-void handleMaxPos()
-{
-  server.send(200, "text/plain", String(limit));
-}
-void handleSetUpStatus()
-{
-  server.send(200, "text/plain", String(isSetUp));
-}
+void handleCurrentPos() { server.send(200, "text/plain", String(stepper.currentPosition())); }
+void handleMaxPos()     { server.send(200, "text/plain", String(limit)); }
+void handleSetUpStatus(){ server.send(200, "text/plain", String(isSetUp)); }
 
 void loop() 
 {
   server.handleClient();
-  
-  // --- Run stepper ---
   stepper.run();
-  
+
   if (stepper.distanceToGo() == 0 && webControl)
   {
     Serial.println("Finished moving");
     webControl = false;
   }
 
-  //Utils:
   // --- Update buttons ---
   button_up.update();
   button_down.update();
@@ -144,52 +137,61 @@ void loop()
     delay(600);
   }
 
-
   // --- Motor control ---
   if (!webControl)
   {
-    if (up && !down && stepper.currentPosition() < limit) 
+    // ======== MOVE UP ========
+    if (up && !down && stepper.currentPosition() < limit)
     {
-      if (moveUpStart == 0) 
-        moveUpStart = millis();
-      if (millis() - moveUpStart >= 300) 
-        stepper.setSpeed(600);
+      if (moveUpStart == 0) moveUpStart = millis();
+
+      if (millis() - moveUpStart >= holdDelay)
+      {
+        long newTarget = stepper.targetPosition() + stepIncrement;
+        if (newTarget > limit) newTarget = limit;
+        stepper.moveTo(newTarget);
+      }
     }
-    else if (down && !up && stepper.currentPosition() > 0) 
+    // ======== MOVE DOWN ========
+    else if (down && !up && stepper.currentPosition() > 0)
     {
-      if (moveDownStart == 0) 
-        moveDownStart = millis();
-      if (millis() - moveDownStart >= 300) 
-        stepper.setSpeed(-600);
+      if (moveDownStart == 0) moveDownStart = millis();
+
+      if (millis() - moveDownStart >= holdDelay)
+      {
+        long newTarget = stepper.targetPosition() - stepIncrement;
+        if (newTarget < 0) newTarget = 0;
+        stepper.moveTo(newTarget);
+      }
     }
-    else 
+    // ======== NO PRESS ========
+    else
     {
-      stepper.setSpeed(0);
+      if(stepper.isRunning())
+        stepper.stop();
       moveUpStart = 0;
       moveDownStart = 0;
     }
 
-    //--- Combo press actions ---
+    // --- Combo press actions (set / reset limit) ---
     if (up && down) 
     {
-      if (comboStart == 0) 
-        comboStart = millis();
+      if (comboStart == 0) comboStart = millis();
       unsigned long held = millis() - comboStart;
 
-      if (!isSetUp && held == 500) 
+      if (!isSetUp && held >= 500) 
       {
         limit = stepper.currentPosition();
         isSetUp = true;
         Serial.println("Limit set");
       }
-      else if (isSetUp && held == 3000) 
+      else if (isSetUp && held >= 3000) 
       {
         limit = 5000;
         isSetUp = false;
         Serial.println("Reset");
       }
     } 
-    else 
-      comboStart = 0;  // reset combo timer when not both pressed
+    else comboStart = 0;
   }
 }
