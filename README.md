@@ -4,7 +4,7 @@
 
 Control and automate your roller blinds using an ESP32 microcontroller and a Flask-based web interface. Supports both manual control and scheduled automation from any device on your network.
 
-![desktop_ui](images/ui_desktop.png)
+![desktop_ui](images/architecture.png)
 ---
 
 ## Features
@@ -14,7 +14,7 @@ Control and automate your roller blinds using an ESP32 microcontroller and a Fla
 - Lightweight and fast
 - Runs on ESP32 with minimal hardware requirements
 
-
+![desktop_ui](images/ui_desktop.png)
 ---
 
 ## Hardware
